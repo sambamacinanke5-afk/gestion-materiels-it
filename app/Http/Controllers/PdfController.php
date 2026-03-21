@@ -10,33 +10,40 @@ use App\Models\LigneBondelivraison;
 
 class PdfController extends Controller
 {
+    // Fonction globale pour nettoyer les noms de fichiers
+    private function safeFilename($name)
+    {
+        return preg_replace('/[\/\\\\:*?"<>|]/', '-', $name);
+    }
+
     // ================= BL =================
-
-
     public function bonLivraison($id)
     {
-        $bondelivraison = Bondelivraison::with('lignes.materiel.typemateriel', 'lignes.materiel.marque', 'fournisseur')->findOrFail($id);
+        $bondelivraison = Bondelivraison::with(
+            'lignes.materiel.typemateriel',
+            'lignes.materiel.marque',
+            'fournisseur'
+        )->findOrFail($id);
 
         $pdf = Pdf::loadView('PDF.Bondelivraison', compact('bondelivraison'))
             ->setPaper('A4', 'portrait');
 
-        return $pdf->stream('BL_' . $bondelivraison->bondelivraison . '.pdf');
+        $filename = $this->safeFilename('BL_' . $bondelivraison->bondelivraison . '.pdf');
+
+        return $pdf->stream($filename);
     }
-
-
 
     // ================= RÉPARTITION =================
     public function repartition($id)
     {
-        // Récupérer la répartition avec le bon de livraison et les lignes
         $repartition = Repartition::with([
-            'bondelivraison.fournisseur', // Fournisseur pour le PDF
-            'lignes.service',             // Service lié à chaque ligne
+            'bondelivraison.fournisseur',
+            'lignes.service',
         ])->findOrFail($id);
 
-        // Pour chaque ligne, charger les matériels liés via les IDs stockés en JSON
         foreach ($repartition->lignes as $ligne) {
             $lbIds = json_decode($ligne->lignebondelivraison_id, true) ?? [];
+
             $ligne->materielsBL = LigneBondelivraison::with([
                 'materiel',
                 'materiel.marque',
@@ -44,29 +51,28 @@ class PdfController extends Controller
             ])->whereIn('id', $lbIds)->get();
         }
 
-        // Génération du PDF
         $pdf = Pdf::loadView('pdf.repartition', compact('repartition'))
             ->setPaper('A4', 'portrait')
             ->setOption('defaultFont', 'DejaVu Sans');
 
-        // Retourne le PDF en streaming
-        return $pdf->stream('repartition_materiels.pdf');
+        $filename = $this->safeFilename('repartition_materiels.pdf');
+
+        return $pdf->stream($filename);
     }
-
-
-
 
     // ================= DÉPLOIEMENT =================
     public function deploiement($id)
     {
         $deploiement = Deploiement::with([
-            'lignes.materiel', // ici 'lignes()' doit exister dans Deploiement
+            'lignes.materiel',
             'utilisateur'
         ])->findOrFail($id);
 
         $pdf = Pdf::loadView('pdf.deploiement', compact('deploiement'))
             ->setPaper('A4', 'portrait');
 
-        return $pdf->stream('Deploiement_' . $deploiement->id . '.pdf');
+        $filename = $this->safeFilename('Deploiement_' . $deploiement->id . '.pdf');
+
+        return $pdf->stream($filename);
     }
 }
