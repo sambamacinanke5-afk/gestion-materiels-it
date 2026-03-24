@@ -3,65 +3,76 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
+use Spatie\Permission\Models\Role;
 
 class DatabaseSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // ===============================
-        // Création des rôles (si inexistants)
-        // ===============================
+        // 🔹 Appel du seeder Spatie (rôles + permissions)
+        $this->call([
+            RolesAndPermissionsSeeder::class,
+        ]);
 
-        $adminRoleId = DB::table('roles')->where('name', 'Admin')->value('id');
-
-        if (!$adminRoleId) {
-            $adminRoleId = DB::table('roles')->insertGetId([
-                'name' => 'Admin',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-        }
-
-        $userRoleId = DB::table('roles')->where('name', 'User')->value('id');
-
-        if (!$userRoleId) {
-            $userRoleId = DB::table('roles')->insertGetId([
-                'name' => 'User',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-        }
+        //appel du seeder de création des menus
+            $this->call(MenuSeeder::class);
 
         // ===============================
-        // Création de l'utilisateur Admin
+        // Création Admin
         // ===============================
 
-        User::firstOrCreate(
-            ['email' => 'admin@gmail.com'],
+        $admin = User::firstOrCreate(
+            ['email' => 'admin@oditech.ml'],
             [
                 'name' => 'Admin',
                 'password' => Hash::make('123456'),
-                'role_id' => $adminRoleId,
             ]
         );
 
+        // Assigner rôle
+        $admin->assignRole('admin');
+
         // ===============================
-        // Création de l'utilisateur User
+        // Création User IT
         // ===============================
 
-        User::firstOrCreate(
-            ['email' => 'user@gmail.com'],
+        $user = User::firstOrCreate(
+            ['email' => 'it@oditech.ml'],
             [
-                'name' => 'User',
+                'name' => 'IT',
                 'password' => Hash::make('123456'),
-                'role_id' => $userRoleId,
             ]
         );
+
+        $user->assignRole('it');
+         // ===============================
+        // Création User MG
+        // ===============================
+
+        $user = User::firstOrCreate(
+            ['email' => 'mg@oditech.ml'],
+            [
+                'name' => 'MG',
+                'password' => Hash::make('123456'),
+            ]
+        );
+
+        $user->assignRole('mg');
+
+         // ===============================
+        // Création User AUDIT
+        // ===============================
+
+        $user = User::firstOrCreate(
+            ['email' => 'audit@oditech.ml'],
+            [
+                'name' => 'AUDIT',
+                'password' => Hash::make('123456'),
+            ]
+        );
+
+        $user->assignRole('audit');
     }
 }

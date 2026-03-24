@@ -1,84 +1,119 @@
-<section id="sidebar">
-    <a href="#" class="brand">
-        <img src="{{ asset('assets/img/bms.jpg') }}" alt="Logo BMS" width="120" height="120"
-            style="border-radius: 7px;">
-        <span class="text" style="font-size: 18px; font-weight: bold; margin-left: 8px;">Gestion-IT</span>
-    </a>
-    <ul class="side-menu top">
-        <li class="active">
-            <a href="">
-                <i class='bx bxs-dashboard'></i>
-                <span class="text">Tableau de Bord</span>
-            </a>
-        </li>
+@php
+    use App\Models\Menu;
+    use Illuminate\Support\Facades\Route;
 
-        <li>
-            <a href="{{ route('fournisseurs.index') }}">
-                <i class='bx bxs-truck'></i>
-                <span class="text">Fournisseurs</span>
-            </a>
-        </li>
+    $user = auth()->user();
 
-        <li>
-            <a href="{{route('bondelivraison.index')}}">
-                <i class='bx bxs-receipt'></i>
-                <span class="text">Bon de Livraison</span>
-            </a>
-        </li>
+    $allMenus = Menu::query()
+        ->whereNull('parent_id')
+        ->where('is_active', true)
+        ->orderBy('sort_order')
+        ->get();
 
-        <li>
-            <a href="{{route('gestiondeploiement.index')}}">
-                <i class='bx bxs-package'></i>
-                <span class="text">Matériel</span>
-            </a>
-        </li>
+    $menus = $allMenus->filter(function ($menu) use ($user) {
+        return $user && filled($menu->permission_name) && $user->can($menu->permission_name);
+    });
+@endphp
 
-        <li>
-            <a href="{{route("gestionmateriel.index")}}">
-                <i class='bx bxs-cabinet'></i>
-                <span class="text">Gestion Matériels</span>
-            </a>
-        </li>
+<aside class="sidebar">
+    <style>
+        .sidebar {
+            width: 210px;
+            background: #f8fafc;
+            padding: 10px;
+            border-right: 1px solid #e5e7eb;
+            height: 100vh;
+            overflow-y: auto;
+        }
 
-        <li>
-            <a href="{{route('marque.index')}}">
-                <i class='bx bxs-purchase-tag'></i>
-                <span class="text">Gestion Marques</span>
-            </a>
-        </li>
+        .sidebar-logo {
+            text-align: center;
+            margin-bottom: 14px;
+        }
 
-        <li>
-            <a href="{{route('deploiement.index')}}">
-                <i class='bx bxs-map-pin'></i>
-                <span class="text">Déploiement</span>
-            </a>
-        </li>
-        <li>
-            <a href="{{route('service.index')}}">
-                <i class='bx bxs-map-pin'></i>
-                <span class="text">Services</span>
-            </a>
-        </li>
-        <li>
-            <a href="{{route('repartition.index')}}">
-                <i class='bx bxs-map-pin'></i>
-                <span class="text">Repartition</span>
-            </a>
-        </li>
-    </ul>
+        .sidebar-logo img {
+            max-width: 140px;
+        }
 
-    <ul class="side-menu">
-        {{-- <li>
-            <a href="#">
-                <i class='bx bxs-cog'></i>
-                <span class="text">Paramètres</span>
+        .sidebar-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 10px;
+            border-radius: 20px;
+            text-decoration: none;
+            color: #4b5563;
+            font-size: 13px;
+            font-weight: 500;
+            transition: 0.2s;
+        }
+
+        .menu-item:hover {
+            background: #eef2ff;
+            color: #2563eb;
+            transform: translateX(2px);
+        }
+
+        .menu-item.active {
+            background: #e6edff;
+            color: #2563eb;
+            font-weight: 600;
+        }
+
+        .menu-icon {
+            font-size: 14px;
+            width: 18px;
+            text-align: center;
+        }
+
+        .logout {
+            margin-top: 10px;
+            color: #ef4444;
+        }
+
+        .logout:hover {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .menu-item i {
+            font-size: 14px;
+        }
+    </style>
+
+    <div class="sidebar-logo">
+        <img src="{{ asset('images/logo-bms.png') }}" alt="BMS">
+    </div>
+
+    <nav class="sidebar-menu">
+        @foreach ($menus as $menu)
+            @php
+                $menuUrl = '#';
+
+                if ($menu->route && Route::has($menu->route)) {
+                    $menuUrl = route($menu->route);
+                }
+            @endphp
+
+            <a href="{{ $menuUrl }}"
+               class="menu-item {{ $menu->route && request()->routeIs($menu->route, str_replace('.index', '.*', $menu->route)) ? 'active' : '' }}">
+                <span class="menu-icon"><i class="{{ $menu->icon }}"></i></span>
+                {{ $menu->title }}
             </a>
-        </li> --}}
-        <li>
-            <a href="#" class="logout">
-                <i class='bx bxs-log-out-circle'></i>
-                <span class="text">Déconnexion</span>
-            </a>
-        </li>
-    </ul>
-</section>
+        @endforeach
+
+        <form method="POST" action="{{ route('logout') }}">
+            @csrf
+            <button type="submit" class="menu-item logout" style="border:none;background:none;width:100%;text-align:left;">
+                <span class="menu-icon"><i class="fa-solid fa-right-from-bracket"></i></span>
+                Déconnexion
+            </button>
+        </form>
+    </nav>
+</aside>

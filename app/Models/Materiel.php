@@ -11,6 +11,7 @@ class Materiel extends Model
         'marque_id',
         'typemateriel_id',
         'numero_serie',
+        'statut',
     ];
 
     public function marque()

@@ -60,7 +60,6 @@
             </a>
         </li>
     </ul>
-
     <!-- PARAMÈTRES & DÉCONNEXION -->
     <ul class="side-menu bottom">
         <li>
