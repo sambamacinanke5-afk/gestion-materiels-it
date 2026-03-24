@@ -11,14 +11,15 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table('bondelivraisons', function (Blueprint $table) {
-            $table->string('statut')->default('brouillon');
+        Schema::table('materiels', function (Blueprint $table) {
+            $table->foreignId('typemateriel_id')->constrained('type_materiels');
+
         });
     }
 
     public function down()
     {
-        Schema::table('bondelivraisons', function (Blueprint $table) {
+        Schema::table('materiels', function (Blueprint $table) {
             $table->dropColumn('statut');
         });
     }
