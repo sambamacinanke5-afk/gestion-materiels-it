@@ -3,112 +3,158 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
+use Spatie\Permission\Models\Role;
+use Illuminate\Support\Facades\Password;
+use Carbon\Carbon;
 
 class UserController extends Controller
 {
+   public function __construct()
+    {
+        $this->middleware('permission:users.view')->only(['index', 'show']);
+        $this->middleware('permission:users.create')->only(['create', 'store']);
+        $this->middleware('permission:users.update')->only(['edit', 'update']);
+        $this->middleware('permission:users.delete')->only(['destroy']);
+        $this->middleware('permission:users.suspend')->only(['suspend', 'activate']);
+        $this->middleware('permission:users.reset-password')->only(['sendPasswordReset']);
+    }
+
     public function index()
     {
-        $users = User::with('role')
-            ->orderBy('id', 'desc')
-            ->paginate(10);
+        $users = User::with('roles')
+            ->latest()
+            ->get();
 
-        return view('admin.user.index', compact('users'));
+        return view('admin.users.index', compact('users'));
     }
+
     public function create()
     {
-        //
-        $users = User::all();
-        // $medecins = Medecin::all();
-        $roles = role::all();
+        $roles = Role::orderBy('name')->get();
 
-
-        return view('admin.user.create', compact("users", "roles"));
+        return view('admin.users.create', compact('roles'));
     }
-    // Méthode pour stocker le nouvel utilisateur
+
     public function store(Request $request)
     {
-        // Validation des données
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:6',
-            'role_id' => 'required|integer|exists:roles,id',
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'roles' => ['nullable', 'array'],
+            'roles.*' => ['string', 'exists:roles,name'],
         ]);
 
-        // Création de l'utilisateur
-        User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role_id' => $request->role_id,
+        $user = User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
         ]);
 
-        return redirect()->route('user.index')->with('success', 'Utilisateur créé avec succès.');
-    }
-    public function edit($id)
-    {
-        // Récupérer l'utilisateur par son ID
-        $user = User::findOrFail($id);
+        $user->syncRoles($validated['roles'] ?? []);
 
-        // Récupérer tous les rôles pour le select
-        $roles = \App\Models\Role::all();
-
-        // Retourner la vue edit avec les données
-        return view('admin.user.edit', compact('user', 'roles'));
+        return redirect()
+            ->route('admin.users.index')
+            ->with('success', 'Utilisateur créé avec succès.');
     }
 
-    public function update(Request $request, $id)
+    public function edit(User $user)
     {
-        $user = User::findOrFail($id);
+        $roles = Role::orderBy('name')->get();
+        $userRoles = $user->roles->pluck('name')->toArray();
 
-        $request->validate([
-            'name'    => 'required|string|max:255',
-            'email'   => 'required|email|max:255|unique:users,email,' . $user->id,
-            'password' => 'nullable|string',
-            'role_id' => 'required|exists:roles,id',
+        return view('admin.users.edit', compact('user', 'roles', 'userRoles'));
+    }
+
+    public function update(Request $request, User $user)
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => [
+                'required',
+                'email',
+                'max:255',
+                Rule::unique('users', 'email')->ignore($user->id),
+            ],
+            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+            'roles' => ['nullable', 'array'],
+            'roles.*' => ['string', 'exists:roles,name'],
         ]);
 
-        // Mise à jour
-        $user->name = $request->name;
-        $user->email = $request->email;
-        $user->role_id = $request->role_id;
+        $data = [
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+        ];
 
-        // Si un nouveau mot de passe est fourni, on le hash
-        if ($request->password) {
-            $user->password = Hash::make($request->password);
+        if (!empty($validated['password'])) {
+            $data['password'] = Hash::make($validated['password']);
         }
 
-        $user->save();
+        $user->update($data);
+        $user->syncRoles($validated['roles'] ?? []);
 
-        return redirect()->route('user.index')->with('success', 'Utilisateur mis à jour avec succès.');
+        return redirect()
+            ->route('admin.users.index')
+            ->with('success', 'Utilisateur mis à jour avec succès.');
     }
 
-
-    public function destroy($id)
+    public function destroy(User $user)
     {
-        // Récupérer l'utilisateur par son ID
-        $user = User::findOrFail($id);
+        if (auth()->id() === $user->id) {
+            return redirect()
+                ->route('admin.users.index')
+                ->with('success', 'Vous ne pouvez pas supprimer votre propre compte.');
+        }
 
-        // Supprimer l'utilisateur
         $user->delete();
 
-        // Rediriger vers la liste avec un message de succès
-        return redirect()->route('user.index')->with('success', 'Utilisateur supprimé avec succès.');
+        return redirect()
+            ->route('admin.users.index')
+            ->with('success', 'Utilisateur supprimé avec succès.');
     }
-    public function toggleStatus($id)
-    {
-        $user = User::findOrFail($id);
 
-        // Inverse l'état
-        $user->is_active = !$user->is_active;
-        $user->save();
-
-        $status = $user->is_active ? 'activé' : 'suspendu';
-
-        return redirect()->route('user.index')->with('success', "Utilisateur $status avec succès.");
+    public function suspend(User $user)
+{
+    if (auth()->id() === $user->id) {
+        return redirect()
+            ->route('admin.users.index')
+            ->with('success', 'Vous ne pouvez pas suspendre votre propre compte.');
     }
+
+    $user->update([
+        'is_suspended' => true,
+        'suspended_at' => now(),
+    ]);
+
+    return redirect()
+        ->route('admin.users.index')
+        ->with('success', 'Utilisateur suspendu avec succès.');
+}
+
+public function activate(User $user)
+{
+    $user->update([
+        'is_suspended' => false,
+        'suspended_at' => null,
+    ]);
+
+    return redirect()
+        ->route('admin.users.index')
+        ->with('success', 'Utilisateur réactivé avec succès.');
+}
+
+public function sendPasswordReset(User $user)
+{
+    $status = Password::sendResetLink([
+        'email' => $user->email,
+    ]);
+
+    return redirect()
+        ->route('admin.users.index')
+        ->with('success', __($status));
+}
 }

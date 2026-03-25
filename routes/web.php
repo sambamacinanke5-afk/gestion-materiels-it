@@ -9,6 +9,12 @@ use App\Http\Controllers\PdfController;
 
 // Nouveau controller unique pour les dashboards
 use App\Http\Controllers\DashboardController;
+//Controller pour les Menus
+use App\Http\Controllers\Admin\MenuController;
+//Controller pour les rôles
+use App\Http\Controllers\Admin\RoleController;
+//Controller pour les Permissions
+use App\Http\Controllers\Admin\PermissionController;
 
 // Admin
 use App\Http\Controllers\Admin\FournisseurController;
@@ -72,6 +78,74 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/audit', [DashboardController::class, 'audit'])
             ->name('audit')
             ->middleware('role:audit');
+    });
+
+     /*
+    |--------------------------------------------------------------------------
+    | Gestions des Menus
+    |--------------------------------------------------------------------------
+    */
+    Route::middleware(['auth'])
+        ->prefix('admin')
+        ->name('admin.')
+        ->group(function () {
+            Route::resource('menus', MenuController::class);
+    });
+
+
+   /*
+    |--------------------------------------------------------------------------
+    | Gestions des Rôles
+    |--------------------------------------------------------------------------
+    */
+
+    Route::middleware(['auth'])
+        ->prefix('admin')
+        ->name('admin.')
+        ->group(function () {
+            Route::resource('roles', RoleController::class);
+    });
+
+    /*
+    |--------------------------------------------------------------------------
+    | Gestions des Permissions
+    |--------------------------------------------------------------------------
+    */
+
+    Route::middleware(['auth'])
+        ->prefix('admin')
+        ->name('admin.')
+        ->group(function () {
+            Route::resource('permissions', PermissionController::class);
+    });
+    /*
+    |--------------------------------------------------------------------------
+    | Gestions des Users
+    |--------------------------------------------------------------------------
+    */
+
+    Route::middleware(['auth'])
+        ->prefix('admin')
+        ->name('admin.')
+        ->group(function () {
+            Route::resource('users', UserController::class);
+    });
+
+    /*
+    |--------------------------------------------------------------------------
+    |Routes custums pour la suspension et le reset de password
+    |--------------------------------------------------------------------------
+    */
+
+    Route::middleware(['auth'])
+        ->prefix('admin')
+        ->name('admin.')
+        ->group(function () {
+            Route::resource('users', UserController::class);
+
+            Route::patch('users/{user}/suspend', [UserController::class, 'suspend'])->name('users.suspend');
+            Route::patch('users/{user}/activate', [UserController::class, 'activate'])->name('users.activate');
+            Route::post('users/{user}/send-password-reset', [UserController::class, 'sendPasswordReset'])->name('users.send-password-reset');
     });
 
     /*

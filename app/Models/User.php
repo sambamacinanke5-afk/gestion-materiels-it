@@ -14,7 +14,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'role_id', // temporaire si tu en as encore besoin pour migration
+        'is_suspended',
+        'suspended_at',
     ];
 
     protected $hidden = [
@@ -24,5 +25,8 @@ class User extends Authenticatable
 
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+        'is_suspended' => 'boolean',
+        'suspended_at' => 'datetime',
     ];
 }
