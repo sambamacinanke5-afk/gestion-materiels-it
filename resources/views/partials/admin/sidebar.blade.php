@@ -3,10 +3,10 @@
     <!-- MENU PRINCIPAL -->
     <ul class="side-menu top">
         <a href="{{ route('admin.dashboard') }}" class="brand">
-            <img src="{{ asset('assets/img/bms.jpg') }}" alt="Logo BMS" class="brand-logo">
+            <img src="{{ asset('assets/img/bms.png') }}" alt="Logo BMS" class="brand-logo">
         </a>
-        <li class="{{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
-            <a href="{{ route('admin.dashboard') }}">
+        <li class="{{ request()->routeIs('dashboard.admin') ? 'active' : '' }}">
+            <a href="{{ route('dashboard.admin') }}">
                 <i class='bx bxs-dashboard'></i>
                 <span class="text">Tableau de Bord</span>
             </a>
@@ -56,7 +56,7 @@
         <li>
             <a href="{{ route('repartition.index') }}">
                 <i class='bx bxs-share-alt'></i>
-                <span class="text">Répartition</span>
+                <span class="text">Répartit</span>
             </a>
         </li>
     </ul>

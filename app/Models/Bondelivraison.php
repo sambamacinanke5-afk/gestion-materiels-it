@@ -10,10 +10,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Bondelivraison extends Model
 {
-    use HasFactory;
+   use HasFactory;
+
+    // 🔹 Spécifie le nom exact de la table
+    protected $table = 'bons_livraison';
+
     protected $fillable = [
         'fournisseur_id',
-        'bondelivraison',
+        'numero_bl', // adapte ici, tu as 'bondelivraison' dans l'ancien modèle
         'date_livraison',
         'statut',
     ];

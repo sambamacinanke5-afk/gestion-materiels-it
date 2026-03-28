@@ -13,10 +13,12 @@ class MarqueController extends Controller
      * Affiche la liste des marques.
      */
     public function index()
-    {
-        $marques = Marque::all();
-        return view('admin.marque.index', compact('marques'));
-    }
+{
+
+    $marques = Marque::all(); // ✅ doit être ça
+
+    return view('admin.marque.index', compact('marques'));
+}
 
     /**
      * Affiche le formulaire de création.
@@ -31,13 +33,14 @@ class MarqueController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+
         $request->validate([
             'Designation' => 'required|string|max:255',
         ]);
 
         try {
             Marque::create([
-                'Designation' => $request->Designation,
+                 'Designation' => $request->Designation,
             ]);
 
             session()->flash('success', 'La marque a été ajoutée avec succès.');

@@ -9,7 +9,14 @@ class Fournisseur extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['nom', 'Adresse', 'Contact'];
+   protected $fillable = [
+    'nom',
+    'contact_nom',
+    'telephone',
+    'email',
+    'adresse',
+    'actif',
+];
 
     public function bondelivraisons()
     {

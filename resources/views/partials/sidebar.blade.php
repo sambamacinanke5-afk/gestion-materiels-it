@@ -88,7 +88,7 @@
     </style>
 
     <div class="sidebar-logo">
-        <img src="{{ asset('images/logo-bms.png') }}" alt="BMS">
+        <img src="{{ asset('assets/img/bms.jpg') }}" alt="BMS">
     </div>
 
     <nav class="sidebar-menu">

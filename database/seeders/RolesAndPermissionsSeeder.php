@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
@@ -14,61 +15,96 @@ class RolesAndPermissionsSeeder extends Seeder
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
         $permissions = [
-            'dashboard.admin',
-            'dashboard.it',
-            'dashboard.mg',
-            'dashboard.audit',
+            // Dashboard
+            'dashboard.view',
 
+            // Menus
+            'menus.view',
+            'menus.create',
+            'menus.update',
+            'menus.delete',
+
+            // Rôles
+            'roles.view',
+            'roles.create',
+            'roles.update',
+            'roles.delete',
+
+            // Permissions
+            'permissions.view',
+            'permissions.create',
+            'permissions.update',
+            'permissions.delete',
+
+            // Utilisateurs
+            'users.view',
+            'users.create',
+            'users.update',
+            'users.delete',
+            'users.suspend',
+            'users.reset-password',
+
+            // Métier
+            'fournisseurs.view',
+            'bondelivraison.view',
+            'deploiement.view',
             'materiel.view',
-            'materiel.create',
-            'materiel.update',
-            'materiel.delete',
+            'marque.view',
+            'service.view',
+            'repartition.view',
+            'profil.view',
         ];
 
         foreach ($permissions as $permission) {
-            Permission::firstOrCreate([
-                'name' => $permission,
-                'guard_name' => 'web',
-            ]);
+            Permission::findOrCreate($permission, 'web');
         }
 
-        $admin = Role::firstOrCreate([
-            'name' => 'admin',
-            'guard_name' => 'web',
-        ]);
+        $admin = Role::findOrCreate('admin', 'web');
+        $it = Role::findOrCreate('it', 'web');
+        $mg = Role::findOrCreate('mg', 'web');
+        $audit = Role::findOrCreate('audit', 'web');
 
-        $it = Role::firstOrCreate([
-            'name' => 'it',
-            'guard_name' => 'web',
-        ]);
+        // Admin : tout
+        $admin->syncPermissions(Permission::all());
 
-        $mg = Role::firstOrCreate([
-            'name' => 'mg',
-            'guard_name' => 'web',
-        ]);
-
-        $audit = Role::firstOrCreate([
-            'name' => 'audit',
-            'guard_name' => 'web',
-        ]);
-
-        $admin->givePermissionTo($permissions);
-
-        $it->givePermissionTo([
-            'dashboard.it',
+        // IT
+        $it->syncPermissions([
+            'dashboard.view',
             'materiel.view',
-            'materiel.create',
-            'materiel.update',
+            'bondelivraison.view',
+            'deploiement.view',
+            'marque.view',
+            'service.view',
+            'repartition.view',
+            'profil.view',
         ]);
 
-        $mg->givePermissionTo([
-            'dashboard.mg',
+        // MG
+        $mg->syncPermissions([
+            'dashboard.view',
             'materiel.view',
+            'repartition.view',
+            'deploiement.view',
+            'bondelivraison.view',
         ]);
 
-        $audit->givePermissionTo([
-            'dashboard.audit',
+        // AUDIT
+        $audit->syncPermissions([
+            'dashboard.view',
+            'fournisseurs.view',
+            'bondelivraison.view',
             'materiel.view',
+            'repartition.view',
+            'profil.view',
         ]);
+
+        // Attribution automatique du rôle admin à l'utilisateur admin
+        $adminUser = User::where('email', 'admin@oditech.ml')->first();
+
+        if ($adminUser) {
+            $adminUser->syncRoles(['admin']);
+        }
+
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
     }
 }

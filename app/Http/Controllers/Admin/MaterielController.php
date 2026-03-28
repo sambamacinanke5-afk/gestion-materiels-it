@@ -1,131 +1,119 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
 namespace App\Http\Controllers;
 
-use App\Models\Marque;
 use App\Models\Materiel;
+use App\Models\Marque;
 use App\Models\TypeMateriel;
+use App\Models\CategorieMateriel;
 use Illuminate\Http\Request;
-use Yoeunes\Toastr\Facades\Toastr;
 
 class MaterielController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * LISTE
      */
     public function index()
     {
-        //
-        $materiels = Materiel::all();
-        $typemateriels = TypeMateriel::all();
-               $marques=Marque::all();
+        $materiels = Materiel::with([
+            'marque',
+            'typemateriel',
+            'categorie'
+        ])->latest()->get();
 
-        return view("admin.materiel.index", compact("typemateriels","materiels","marques"));
+        return view('materiels.index', compact('materiels'));
     }
 
     /**
-     * Show the form for creating a new resource.
+     * FORMULAIRE CREATE
      */
     public function create()
     {
-        //
-        $materiels = Materiel::all();
-        $typemateriels = TypeMateriel::all();
-        $marques=Marque::all();
-     return view("admin.materiel.create", compact("typemateriels","materiels","marques"));
+        $marques = Marque::all();
+        $types = TypeMateriel::all();
+        $categories = CategorieMateriel::all();
+
+        return view('materiels.create', compact('marques', 'types', 'categories'));
     }
 
     /**
-     * Store a newly created resource in storage.
+     * ENREGISTRER
      */
     public function store(Request $request)
     {
-        // ✅ Validation
         $request->validate([
-            "Designation" => "required|string|max:255",
-            "Numerodeserie" => "required|string|max:255|unique:materiels,Numerodeserie",
-            "typemateriel_id" => "required|exists:type_materiels,id",
-            "marque_id" => "required|exists:marques,id",
-        ]);
-
-        try {
-            // ✅ Création
-            Materiel::create([
-                'Designation' => $request->Designation,
-                'Numerodeserie' => $request->Numerodeserie,
-                'typemateriel_id' => $request->typemateriel_id,
-                'marque_id' => $request->marque_id,
-            ]);
-
-            // ✅ Notification de succès
-            toastr()->success('Le matériel a été ajouté avec succès !', 'Succès');
-
-            return redirect()->route('materiel.index');
-        } catch (\Exception $e) {
-            // ✅ Notification d’erreur
-            toastr()->error('Une erreur est survenue lors de l\'ajout du matériel.', 'Erreur');
-            return redirect()->back()->withInput();
-        }
-    }
-
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Materiel $materiel)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit($id)
-    {
-        $materiel = Materiel::findOrFail($id);
-        $typemateriels = TypeMateriel::all();
-        $marques = Marque::all();
-
-        return view('admin.materiel.edit', compact('materiel', 'typemateriels', 'marques'));
-    }
-
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, $id)
-    {
-        $request->validate([
-            'Designation' => 'required',
-            'Numerodeserie' => 'required|string|max:255|unique:materiels,Numerodeserie,' . $id,
+            'code_inventaire' => 'required|unique:materiels,code_inventaire',
+            'numero_serie'    => 'nullable|unique:materiels,numero_serie',
+            'marque_id'       => 'required|exists:marques,id',
             'typemateriel_id' => 'required|exists:type_materiels,id',
-            'marque_id' => 'required|exists:marques,id',
+            'categorie_id'    => 'required|exists:categories_materiel,id',
         ]);
 
-        try {
-            $materiel = Materiel::findOrFail($id);
-            $materiel->update($request->all());
+        Materiel::create([
+            'code_inventaire' => $request->code_inventaire,
+            'numero_serie'    => $request->numero_serie,
+            'modele'          => $request->modele,
+            'marque_id'       => $request->marque_id,
+            'typemateriel_id' => $request->typemateriel_id,
+            'categorie_id'    => $request->categorie_id,
+            'statut'          => $request->statut ?? 'recu',
+        ]);
 
-            toastr()->success('Le matériel a été mis à jour avec succès !', 'Succès');
-            return redirect()->route('materiel.index');
-        } catch (\Exception $e) {
-            toastr()->error('Une erreur est survenue lors de la mise à jour.', 'Erreur');
-            return redirect()->back()->withInput();
-        }
+        return redirect()->route('materiels.index')
+            ->with('success', 'Matériel ajouté avec succès');
     }
 
+    /**
+     * EDIT
+     */
+    public function edit(Materiel $materiel)
+    {
+        $marques = Marque::all();
+        $types = TypeMateriel::all();
+        $categories = CategorieMateriel::all();
+
+        return view('materiels.edit', compact(
+            'materiel',
+            'marques',
+            'types',
+            'categories'
+        ));
+    }
 
     /**
-     * Remove the specified resource from storage.
+     * UPDATE
      */
-    public function destroy($id)
+    public function update(Request $request, Materiel $materiel)
     {
-        $materiel = Materiel::findOrFail($id);
+        $request->validate([
+            'code_inventaire' => 'required|unique:materiels,code_inventaire,' . $materiel->id,
+            'numero_serie'    => 'nullable|unique:materiels,numero_serie,' . $materiel->id,
+            'marque_id'       => 'required|exists:marques,id',
+            'typemateriel_id' => 'required|exists:type_materiels,id',
+            'categorie_id'    => 'required|exists:categories_materiel,id',
+        ]);
+
+        $materiel->update([
+            'code_inventaire' => $request->code_inventaire,
+            'numero_serie'    => $request->numero_serie,
+            'modele'          => $request->modele,
+            'marque_id'       => $request->marque_id,
+            'typemateriel_id' => $request->typemateriel_id,
+            'categorie_id'    => $request->categorie_id,
+            'statut'          => $request->statut,
+        ]);
+
+        return redirect()->route('materiels.index')
+            ->with('success', 'Matériel mis à jour');
+    }
+
+    /**
+     * DELETE
+     */
+    public function destroy(Materiel $materiel)
+    {
         $materiel->delete();
 
-        toastr()->success('La marque a été supprimé avec succès.');
-
-        return redirect()->route('materiel.index');
+        return back()->with('success', 'Matériel supprimé');
     }
 }

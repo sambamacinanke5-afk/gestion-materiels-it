@@ -1,134 +1,225 @@
-@extends('partials.admin.master')
+@extends('layouts.app')
+
 @section('content')
-    <div class="container-fluid">
+<style>
+    .admin-page {
+        padding: 24px;
+        background: #f8fafc;
+        min-height: 100vh;
+    }
 
-        <div class="d-flex justify-content-between align-items-center mb-4 mt-3">
-            <h1 class="h3 text-gray-800">Liste de Répartition des matériels informatiques</h1>
-            {{-- <a href="{{ route('repartition.create') }}" class="btn btn-primary">
-                <i class="fas fa-plus"></i> Ajouter une répartition
-            </a> --}}
-        </div>
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
 
-        <p class="mb-4">Liste complète des répartitions des matériels informatiques enregistrées dans le système.</p>
+    .page-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: #1f2937;
+    }
 
-        <div class="card shadow mb-4 mt-4">
-            <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary">Table de répartition</h6>
-            </div>
+    .btn-primary-clean {
+        background: #2563eb;
+        color: #fff;
+        padding: 10px 16px;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 600;
+    }
 
-            <div class="card-body">
-                <div class="table-responsive">
+    .card-clean {
+        background: #fff;
+        border-radius: 18px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+    }
 
-                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
-                        <thead>
-                            <tr>
-                                <th>Fournisseur</th>
-                                <th>Référence BL</th>
-                                <th>Date de répartition</th>
-                                {{-- <th>Matériels répartis</th> --}}
-                                <th>Destinataire(s)</th>
-                                <th>Quantité par ligne</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
+    .card-clean-body {
+        padding: 20px;
+    }
 
-                        <tbody>
-                            @foreach ($repartitions as $repartition)
-                                <tr>
+    .table-clean {
+        width: 100%;
+        border-collapse: collapse;
+    }
 
-                                    <!-- Fournisseur -->
-                                    <td>{{ $repartition->bondelivraison->fournisseur->nom ?? 'N/A' }}</td>
+    .table-clean th {
+        text-align: left;
+        font-size: 13px;
+        color: #6b7280;
+    }
 
-                                    <!-- Référence BL -->
-                                    <td>{{ $repartition->bondelivraison->bondelivraison ?? 'N/A' }}</td>
+    .table-clean th,
+    .table-clean td {
+        padding: 12px;
+        border-bottom: 1px solid #eee;
+    }
 
-                                    <!-- Date de répartition -->
-                                    <td>{{ \Carbon\Carbon::parse($repartition->date_repartition)->format('d/m/Y') }}</td>
+    .badge-success {
+        background: #dcfce7;
+        color: #166534;
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+    }
 
-                                    <!-- Matériels -->
-                                    {{-- <td>
-                                        @foreach ($repartition->lignes as $ligne)
-                                            @php
-                                                $materielIds = json_decode($ligne->lignebondelivraison_id, true);
-                                                $materiels = \App\Models\Materiel::whereIn('id', $materielIds)->get();
-                                            @endphp
+    .badge-warning {
+        background: #fef9c3;
+        color: #92400e;
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+    }
 
-                                            @foreach ($materiels as $mat)
-                                                <span
-                                                    class="badge badge-secondary">{{ $mat->designation ?? 'Non défini' }}</span>
-                                            @endforeach
-                                        @endforeach
-                                    </td> --}}
+    .badge-secondary {
+        background: #e5e7eb;
+        color: #374151;
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+    }
 
-                                    <!-- Destinataires -->
-                                    <td>
-                                        @foreach ($repartition->lignes as $ligne)
-                                            <span class="badge badge-primary">{{ $ligne->destinataire ?? 'N/A' }}</span>
-                                        @endforeach
-                                    </td>
+    .actions {
+        display: flex;
+        gap: 8px;
+    }
 
-                                    <!-- Quantités -->
-                                    <td>
-                                        @foreach ($repartition->lignes as $ligne)
-                                            <span class="badge badge-info">{{ $ligne->quantite ?? 0 }}</span>
-                                        @endforeach
-                                    </td>
+    .btn-show {
+        background: #dcfce7;
+        color: #166534;
+        padding: 6px 10px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 13px;
+    }
 
-                                    <!-- Actions -->
-                                    <td>
-                                        <a href="{{ route('repartition.edit', $repartition->id) }}"
-                                            class="btn btn-sm btn-primary">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
+    .btn-edit {
+        background: #e0f2fe;
+        color: #0369a1;
+        padding: 6px 10px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 13px;
+    }
 
-                                        <a href="{{ route('repartition.show', $repartition->id) }}"
-                                            class="btn btn-info btn-sm" title="Voir">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        <a href="{{ route('pdf.repartition', $repartition->id) }}"
-                                            class="btn btn-warning btn-sm" title="Imprimer le PDF">
-                                            <i class="fas fa-file-pdf"></i>
-                                        </a>
-                                        <form action="{{ route('repartition.destroy', $repartition->id) }}" method="POST"
-                                            style="display:inline-block;"
-                                            onsubmit="return confirm('Voulez-vous vraiment supprimer cette répartition ?');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button class="btn btn-sm btn-danger">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </form>
-                                    </td>
+    .btn-delete {
+        background: #fee2e2;
+        color: #991b1b;
+        border: none;
+        padding: 6px 10px;
+        border-radius: 8px;
+        font-size: 13px;
+        cursor: pointer;
+    }
 
-                                </tr>
-                            @endforeach
-                        </tbody>
+    .empty {
+        text-align: center;
+        color: #6b7280;
+        padding: 20px;
+    }
+</style>
 
-                    </table>
+<div class="admin-page">
 
-                </div>
-            </div>
-        </div>
-
+    <!-- Header -->
+    <div class="page-header">
+        <h1 class="page-title">Répartitions</h1>
+        <a href="{{ route('repartition.create') }}" class="btn-primary-clean">
+            + Ajouter
+        </a>
     </div>
 
-    {{-- Scripts --}}
-    <script src="{{ asset('assets/vendor/jquery/jquery.min.js') }}"></script>
-    <script src="{{ asset('assets/vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
-    <script src="{{ asset('assets/vendor/jquery-easing/jquery.easing.min.js') }}"></script>
-    <script src="{{ asset('assets/js/sb-admin-2.min.js') }}"></script>
+    <!-- Message -->
+    @if(session('success'))
+        <div style="margin-bottom:15px;color:green;">
+            {{ session('success') }}
+        </div>
+    @endif
 
-    <script src="{{ asset('assets/vendor/datatables/jquery.dataTables.min.js') }}"></script>
-    <script src="{{ asset('assets/vendor/datatables/dataTables.bootstrap4.min.js') }}"></script>
+    <!-- Card -->
+    <div class="card-clean">
+        <div class="card-clean-body">
 
-    <script>
-        $(document).ready(function() {
-            $('#dataTable').DataTable({
-                "order": [
-                    [2, "desc"]
-                ],
-                "pageLength": 10
-            });
-        });
-    </script>
+            <table class="table-clean">
+                <thead>
+                    <tr>
+
+                        <th>Numéro Répartition</th>
+                        <th>Site Destination</th>
+                        <th>Service Destination</th>
+                        <th>Date de répartition</th>
+                        <th>Lignes de matériel</th>
+                        <th>Quantité totale</th>
+                        <th>Statut</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @forelse($repartitions as $repartition)
+                    <tr>
+                        <td>{{ $loop->iteration }}</td>
+                        <td>{{ $repartition->numero }}</td>
+                        <td>{{ $repartition->siteDestination->name ?? '-' }}</td>
+                        <td>{{ $repartition->serviceDestination->Designation ?? '-' }}</td>
+                        <td>{{ \Carbon\Carbon::parse($repartition->date_repartition)->format('d/m/Y') }}</td>
+
+                        <!-- Lignes de matériel -->
+                        <td>
+                            @foreach ($repartition->lignes as $ligne)
+                                <span class="badge badge-secondary">
+                                    {{ $ligne->materiel->designation ?? 'N/A' }}
+                                </span>
+                            @endforeach
+                        </td>
+
+                        <!-- Quantité totale -->
+                        <td>{{ $repartition->lignes->sum('quantite') }}</td>
+
+                        <!-- Statut -->
+                        <td>
+                            @if($repartition->statut == 'brouillon')
+                                <span class="badge-secondary">Brouillon</span>
+                            @elseif($repartition->statut == 'en_cours')
+                                <span class="badge-warning">En cours</span>
+                            @elseif($repartition->statut == 'terminee')
+                                <span class="badge-success">Terminée</span>
+                            @else
+                                <span class="badge-secondary">{{ ucfirst($repartition->statut) }}</span>
+                            @endif
+                        </td>
+
+                        <!-- Actions -->
+                        <td>
+                            <div class="actions">
+                                <a href="{{ route('repartition.show', $repartition->id) }}" class="btn-show">Voir</a>
+                                <a href="{{ route('repartition.edit', $repartition->id) }}" class="btn-edit">Modifier</a>
+
+                                <form action="{{ route('repartition.destroy', $repartition->id) }}" method="POST" onsubmit="return confirm('Supprimer cette répartition ?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button class="btn-delete">Supprimer</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="9" class="empty">Aucune répartition trouvée</td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+
+            <!-- Pagination -->
+            {{-- <div style="margin-top:15px;">
+                {{ $repartitions->links() }}
+            </div> --}}
+
+        </div>
+    </div>
+
+</div>
 @endsection

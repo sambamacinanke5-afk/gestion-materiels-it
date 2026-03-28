@@ -9,7 +9,7 @@ return new class extends Migration {
     {
         Schema::create('bon_livraison_lignes', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('bon_livraison_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('bon_livraison_id')->constrained('bons_livraison')->cascadeOnDelete();
             $table->foreignId('categorie_id')->constrained('categories_materiel');
             $table->foreignId('marque_id')->constrained('marques');
             $table->string('modele')->nullable();

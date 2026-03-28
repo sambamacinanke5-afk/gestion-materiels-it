@@ -1,116 +1,228 @@
-@extends('partials.admin.master')
-@section('content')
+@extends('layouts.app')
 
-<div class="container-fluid">
-    <!-- Page Heading -->
-    <div class="d-flex justify-content-between align-items-center mb-4 mt-3">
-        <h1 class="h3 text-gray-800">Liste des Bons de Livraison</h1>
-        <a href="{{ route('bondelivraison.create') }}" class="btn btn-primary">
-            <i class="fas fa-plus"></i> Ajouter un Bon de Livraison
+@section('content')
+<style>
+    .admin-page {
+        padding: 24px;
+        background: #f8fafc;
+        min-height: 100vh;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .page-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: #1f2937;
+    }
+
+    .btn-primary-clean {
+        background: #2563eb;
+        color: #fff;
+        padding: 10px 16px;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .btn-primary-clean:hover {
+        background: #1d4ed8;
+    }
+
+    .card-clean {
+        background: #fff;
+        border-radius: 18px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+    }
+
+    .card-clean-body {
+        padding: 20px;
+    }
+
+    .table-clean {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .table-clean th {
+        text-align: left;
+        font-size: 13px;
+        color: #6b7280;
+    }
+
+    .table-clean th,
+    .table-clean td {
+        padding: 12px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .badge-success {
+        background: #dcfce7;
+        color: #166534;
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+    }
+
+    .badge-warning {
+        background: #fef9c3;
+        color: #92400e;
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+    }
+
+    .badge-danger {
+        background: #fee2e2;
+        color: #991b1b;
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+    }
+
+    .actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .btn-edit {
+        background: #e0f2fe;
+        color: #0369a1;
+        padding: 6px 10px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 13px;
+    }
+
+    .btn-delete {
+        background: #fee2e2;
+        color: #991b1b;
+        border: none;
+        padding: 6px 10px;
+        border-radius: 8px;
+        font-size: 13px;
+        cursor: pointer;
+    }
+
+    .btn-show {
+        background: #dcfce7;
+        color: #166534;
+        padding: 6px 10px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 13px;
+    }
+
+    .empty {
+        text-align: center;
+        color: #6b7280;
+        padding: 20px;
+    }
+</style>
+
+<div class="admin-page">
+
+    <!-- Header -->
+    <div class="page-header">
+        <h1 class="page-title">Bons de Livraison</h1>
+
+        <a href="{{ route('bondelivraison.create') }}" class="btn-primary-clean">
+            + Ajouter
         </a>
     </div>
-    <p class="mb-4">Liste complète des bons de livraison enregistrés dans le système.</p>
 
-    <!-- Tableau des BL -->
-    <div class="card shadow mb-4 mt-4">
-        <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">Table des BL</h6>
+    <!-- Message -->
+    @if(session('success'))
+        <div style="margin-bottom:15px;color:green;">
+            {{ session('success') }}
         </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
-                    <thead>
+    @endif
+
+    <!-- Card -->
+    <div class="card-clean">
+        <div class="card-clean-body">
+
+            <table class="table-clean">
+                <thead>
+                    <tr>
+                        <th>BL</th>
+                        <th>Fournisseur</th>
+                        <th>N° BL</th>
+                        <th>Date</th>
+                        <th>Statut</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @forelse($bonsLivraison as $bon)
                         <tr>
-                            <th>Fournisseur</th>
-                            <th>Nom du bon / Référence</th>
-                            <th>Date de livraison</th>
-                            {{-- <th>Désignation du matériel</th>
-                            <th>Lignes du bon de livraison</th> --}}
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($bondelivraisons as $bon)
-                            <tr>
-                                {{-- Fournisseur --}}
-                                <td>{{ $bon->fournisseur->nom ?? 'Non défini' }}</td>
 
-                                {{-- Référence du bon --}}
-                                <td>{{ $bon->bondelivraison ?? 'Non défini' }}</td>
+                            <td>{{ $loop->iteration }}</td>
 
-                                {{-- Date de livraison --}}
-                                <td>{{ $bon->date_livraison ? \Carbon\Carbon::parse($bon->date_livraison)->format('d/m/Y') : 'Non définie' }}</td>
+                            <td>{{ $bon->fournisseur->nom ?? '-' }}</td>
 
-                                {{-- Désignation du matériel (liste compacte) --}}
-                                {{-- <td>
-                                    @forelse($bon->lignes as $ligne)
-                                        {{ $ligne->materiel->designation ?? 'Matériel non défini' }}<br>
-                                    @empty
-                                        <span class="text-muted">Aucun matériel</span>
-                                    @endforelse
-                                </td>
+                            <td>{{ $bon->numero_bl ?? '-' }}</td>
 
-                                {{-- Lignes du BL détaillées --}}
-                                {{-- <td>
-                                    @forelse($bon->lignes as $ligne)
-                                        Ligne n°{{ $loop->iteration }} —
-                                        Matériel : {{ $ligne->materiel->designation ?? 'Non défini' }} —
-                                        N° série : {{ $ligne->materiel->numero_serie ?? 'N/A' }}<br>
-                                    @empty
-                                        <span class="text-muted">Aucune ligne</span>
-                                    @endforelse
-                                </td> --}}
+                            <td>
+                                {{ $bon->date_livraison
+                                    ? \Carbon\Carbon::parse($bon->date_livraison)->format('d/m/Y')
+                                    : '-'
+                                }}
+                            </td>
 
-                                {{-- Actions --}}
-                                <td class="text-center">
-                                    <a href="{{ route('bondelivraison.show', $bon->id) }}" class="btn btn-info btn-sm" title="Voir">
-                                        <i class="fas fa-eye"></i>
+                            <td>
+                                @if($bon->statut == 'livre')
+                                    <span class="badge-success">Livré</span>
+                                @elseif($bon->statut == 'en_attente')
+                                    <span class="badge-warning">En attente</span>
+                                @else
+                                    <span class="badge-danger">{{ ucfirst($bon->statut) }}</span>
+                                @endif
+                            </td>
+
+                            <td>
+                                <div class="actions">
+
+                                    <a href="{{ route('bondelivraison.show', $bon->id) }}" class="btn-show">
+                                        Voir
                                     </a>
 
-                                    <a href="{{ route('bondelivraison.edit', $bon->id) }}" class="btn btn-warning btn-sm" title="Modifier">
-                                        <i class="fas fa-edit"></i>
+                                    <a href="{{ route('bondelivraison.edit', $bon->id) }}" class="btn-edit">
+                                        Modifier
                                     </a>
-                                    <a href="{{ route('pdf.bl', $bon->id) }}" target="_blank" class="btn btn-danger">
-                                        PDF BL
-                                    </a>
-                                    <form action="{{ route('bondelivraison.destroy', $bon->id) }}" method="POST" style="display:inline-block;">
+
+                                    <form action="{{ route('bondelivraison.destroy', $bon->id) }}" method="POST"
+                                        onsubmit="return confirm('Supprimer ce bon ?')">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-danger btn-sm" title="Supprimer" onclick="return confirm('Voulez-vous vraiment supprimer ce bon ?')">
-                                            <i class="fas fa-trash"></i>
+
+                                        <button type="submit" class="btn-delete">
+                                            Supprimer
                                         </button>
                                     </form>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
 
-                {{-- Pagination --}}
-                <div class="mt-3">
-                    {{ $bondelivraisons->links() }}
-                </div>
+                                </div>
+                            </td>
 
-            </div>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6" class="empty">
+                                Aucun bon de livraison trouvé
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+
         </div>
     </div>
+
 </div>
-
-{{-- Scripts --}}
-<script src="{{ asset('assets/vendor/jquery/jquery.min.js') }}"></script>
-<script src="{{ asset('assets/vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
-<script src="{{ asset('assets/vendor/jquery-easing/jquery.easing.min.js') }}"></script>
-<script src="{{ asset('assets/js/sb-admin-2.min.js') }}"></script>
-<script src="{{ asset('assets/vendor/datatables/jquery.dataTables.min.js') }}"></script>
-<script src="{{ asset('assets/vendor/datatables/dataTables.bootstrap4.min.js') }}"></script>
-
-<script>
-    $(document).ready(function() {
-        $('#dataTable').DataTable({
-            "order": [[ 2, "desc" ]], // Trie par date de livraison décroissante
-            "pageLength": 10
-        });
-    });
-</script>
-
 @endsection

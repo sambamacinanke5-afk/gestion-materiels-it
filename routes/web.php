@@ -27,6 +27,7 @@ use App\Http\Controllers\Admin\LigneDeploiementController;
 use App\Http\Controllers\Admin\ServiceController;
 use App\Http\Controllers\Admin\RepartitionController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\MaterielController;
 
 // User
 use App\Http\Controllers\User\BondelivraisonController as UserBondelivraisonController;
@@ -80,31 +81,31 @@ Route::middleware(['auth'])->group(function () {
             ->middleware('role:audit');
     });
 
-     /*
-    |--------------------------------------------------------------------------
-    | Gestions des Menus
-    |--------------------------------------------------------------------------
-    */
+    /*
+   |--------------------------------------------------------------------------
+   | Gestions des Menus
+   |--------------------------------------------------------------------------
+   */
     Route::middleware(['auth'])
         ->prefix('admin')
         ->name('admin.')
         ->group(function () {
             Route::resource('menus', MenuController::class);
-    });
+        });
 
 
-   /*
-    |--------------------------------------------------------------------------
-    | Gestions des Rôles
-    |--------------------------------------------------------------------------
-    */
+    /*
+     |--------------------------------------------------------------------------
+     | Gestions des Rôles
+     |--------------------------------------------------------------------------
+     */
 
     Route::middleware(['auth'])
         ->prefix('admin')
         ->name('admin.')
         ->group(function () {
             Route::resource('roles', RoleController::class);
-    });
+        });
 
     /*
     |--------------------------------------------------------------------------
@@ -117,7 +118,7 @@ Route::middleware(['auth'])->group(function () {
         ->name('admin.')
         ->group(function () {
             Route::resource('permissions', PermissionController::class);
-    });
+        });
     /*
     |--------------------------------------------------------------------------
     | Gestions des Users
@@ -129,7 +130,7 @@ Route::middleware(['auth'])->group(function () {
         ->name('admin.')
         ->group(function () {
             Route::resource('users', UserController::class);
-    });
+        });
 
     /*
     |--------------------------------------------------------------------------
@@ -146,7 +147,7 @@ Route::middleware(['auth'])->group(function () {
             Route::patch('users/{user}/suspend', [UserController::class, 'suspend'])->name('users.suspend');
             Route::patch('users/{user}/activate', [UserController::class, 'activate'])->name('users.activate');
             Route::post('users/{user}/send-password-reset', [UserController::class, 'sendPasswordReset'])->name('users.send-password-reset');
-    });
+        });
 
     /*
     |--------------------------------------------------------------------------
@@ -171,13 +172,14 @@ Route::middleware(['auth'])->group(function () {
     | ADMIN / REFERENTIELS
     |--------------------------------------------------------------------------
     */
-    Route::prefix('fournisseur')->name('fournisseurs.')->middleware('role:admin|it')->group(function () {
+    Route::prefix('fournisseurs')->name('fournisseurs.')->middleware('role:admin|it')->group(function () {
         Route::get('/', [FournisseurController::class, 'index'])->name('index');
         Route::get('/create', [FournisseurController::class, 'create'])->name('create');
-        Route::post('/create/add', [FournisseurController::class, 'store'])->name('store');
-        Route::get('/edit/{id}', [FournisseurController::class, 'edit'])->name('edit');
-        Route::put('/update/{id}', [FournisseurController::class, 'update'])->name('update');
-        Route::delete('/destroy/{id}', [FournisseurController::class, 'destroy'])->name('destroy');
+        Route::post('/', [FournisseurController::class, 'store'])->name('store'); // <--- POST sur '/'
+        Route::get('/{id}/edit', [FournisseurController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [FournisseurController::class, 'update'])->name('update');
+        Route::delete('/{id}', [FournisseurController::class, 'destroy'])->name('destroy');
+        Route::get('/{id}', [FournisseurController::class, 'show'])->name('show');
     });
 
     Route::prefix('bondelivraison')->name('bondelivraison.')->middleware('role:admin|it')->group(function () {
@@ -207,6 +209,23 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/update/{id}', [TypeMaterielController::class, 'update'])->name('update');
         Route::delete('/destroy/{id}', [TypeMaterielController::class, 'destroy'])->name('destroy');
     });
+
+    Route::prefix('materiels')
+        ->name('materiels.')
+        ->middleware('role:admin|it')
+        ->group(function () {
+
+            Route::get('/', [MaterielController::class, 'index'])->name('index');
+            Route::get('/create', [MaterielController::class, 'create'])->name('create');
+            Route::post('/store', [MaterielController::class, 'store'])->name('store');
+
+            Route::get('/edit/{materiel}', [MaterielController::class, 'edit'])->name('edit');
+            Route::put('/update/{materiel}', [MaterielController::class, 'update'])->name('update');
+
+            Route::delete('/destroy/{materiel}', [MaterielController::class, 'destroy'])->name('destroy');
+        });
+
+
 
     Route::prefix('service')->name('service.')->middleware('role:admin|it')->group(function () {
         Route::get('/', [ServiceController::class, 'index'])->name('index');

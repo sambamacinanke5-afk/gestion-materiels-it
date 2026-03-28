@@ -188,7 +188,7 @@
                 <table class="table-clean">
                     <thead>
                         <tr>
-                            <th>Utilisateur</th>
+                            <th>Utilisateurs</th>
                             <th>Rôles</th>
                             <th>Statut</th>
                             <th>Actions</th>

@@ -7,7 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Marque extends Model
 {
-    use HasFactory;
 
-    protected $fillable = ['Designation']; // ✅ Important
+    protected $table = 'marques'; // ✅ IMPORTANT
+    protected $fillable = ['Designation'];
+
 }

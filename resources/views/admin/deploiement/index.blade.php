@@ -1,92 +1,242 @@
-@extends('partials.admin.master')@section('content')
+@extends('layouts.app')
 
-<div class="container-fluid">
-    <!-- Page Heading -->
-    <div class="d-flex justify-content-between align-items-center mb-4 mt-3">
-        <h1 class="h3 text-gray-800">Liste des déploiements</h1>
-        <a href="{{ route('deploiement.create') }}" class="btn btn-primary">
-            <i class="fas fa-plus"></i> Ajouter des déploiements
+@section('content')
+<style>
+    .admin-page {
+        padding: 24px;
+        background: #f8fafc;
+        min-height: 100vh;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .page-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: #1f2937;
+    }
+
+    .btn-primary-clean {
+        background: #2563eb;
+        color: #fff;
+        padding: 10px 16px;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .card-clean {
+        background: #fff;
+        border-radius: 18px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+    }
+
+    .card-clean-body {
+        padding: 20px;
+    }
+
+    .table-clean {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .table-clean th {
+        text-align: left;
+        font-size: 13px;
+        color: #6b7280;
+    }
+
+    .table-clean th,
+    .table-clean td {
+        padding: 12px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .badge-success {
+        background: #dcfce7;
+        color: #166534;
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+    }
+
+    .badge-warning {
+        background: #fef9c3;
+        color: #92400e;
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+    }
+
+    .badge-secondary {
+        background: #e5e7eb;
+        color: #374151;
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+    }
+
+    .actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .btn-show {
+        background: #dcfce7;
+        color: #166534;
+        padding: 6px 10px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 13px;
+    }
+
+    .btn-edit {
+        background: #e0f2fe;
+        color: #0369a1;
+        padding: 6px 10px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 13px;
+    }
+
+    .btn-delete {
+        background: #fee2e2;
+        color: #991b1b;
+        border: none;
+        padding: 6px 10px;
+        border-radius: 8px;
+        font-size: 13px;
+        cursor: pointer;
+    }
+
+    .empty {
+        text-align: center;
+        color: #6b7280;
+        padding: 20px;
+    }
+</style>
+
+<div class="admin-page">
+
+    <!-- Header -->
+    <div class="page-header">
+        <h1 class="page-title">Déploiements</h1>
+
+        <a href="{{ route('deploiement.create') }}" class="btn-primary-clean">
+            + Ajouter
         </a>
     </div>
-    <p class="mb-4">Liste complète des déploiements enregistrés dans le système.</p>
 
-    <div class="card shadow mb-4 mt-4">
-        <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">Table des déploiements</h6>
+    <!-- Message -->
+    @if(session('success'))
+        <div style="margin-bottom:15px;color:green;">
+            {{ session('success') }}
         </div>
-        <div class="card-body">
-            @if($deploiements->count() > 0)
-                <div class="table-responsive">
-                    <table class="table table-bordered table-hover align-middle" id="deploiementsTable">
-                        <thead class="table-light">
-                            <tr>
-                                <th>RÉFÉRENCE BON DE LIVRAISON</th>
-                                <th>DATE DE CREATION</th>
-                                <th>UTILISATEUR</th>
-                                <th>ÉTAT</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($deploiements as $deploiement)
-                                <tr>
-                                    <td>{{ $deploiement->bondelivraison->bondelivraison ?? 'Non défini' }}</td>
-                                    <td>{{ \Carbon\Carbon::parse($deploiement->Datecreation)->format('d/m/Y') }}</td>
-                                    <td>{{ $deploiement->Utilisateur }}</td>
-                                    <td>{{ ucfirst(str_replace('_', ' ', $deploiement->etat)) }}</td>
-                                    <td>
-                                        <a href="{{ route('deploiement.show', $deploiement->id) }}" class="btn btn-info btn-sm">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        <a href="{{ route('deploiement.edit', $deploiement->id) }}" class="btn btn-warning btn-sm">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                        <a href="{{ route('pdf.deploiement', $deploiement->id) }}" class="btn btn-warning btn-sm"
-                                            title="Imprimer le PDF">
-                                             <i class="fas fa-file-pdf"></i>
-                                      </a>
-                                        <form action="{{ route('deploiement.destroy', $deploiement->id) }}" method="POST" style="display:inline-block;">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Voulez-vous vraiment supprimer ce déploiement ?')">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
+    @endif
 
-                {{-- Pagination --}}
-                <div class="d-flex justify-content-center mt-3">
-                    {{ $deploiements->links() }}
-                </div>
-            @else
-                <div class="alert alert-warning text-center">
-                    Aucun déploiement trouvé.
-                </div>
-            @endif
+    <!-- Card -->
+    <div class="card-clean">
+        <div class="card-clean-body">
+
+            <table class="table-clean">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>BL</th>
+                        <th>Fournisseur</th>
+                        <th>Matériel</th>
+                        <th>Bénéficiaire</th>
+                        <th>Technicien</th>
+                        <th>Date</th>
+                        <th>Statut</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @forelse($deploiements as $deploiement)
+                        <tr>
+
+                            <td>{{ $loop->iteration }}</td>
+
+                            <td>{{ $deploiement->bondelivraison->numero_bl ?? '-' }}</td>
+
+                            <td>{{ $deploiement->bondelivraison->fournisseur->nom ?? '-' }}</td>
+
+                            <td>
+                                {{ $deploiement->materiel->designation ?? '-' }} <br>
+                                <small style="color:#6b7280;">
+                                    {{ $deploiement->materiel->numero_serie ?? '' }}
+                                </small>
+                            </td>
+
+                            <td>{{ $deploiement->beneficiaire->name ?? '-' }}</td>
+
+                            <td>{{ $deploiement->technicien->name ?? '-' }}</td>
+
+                            <td>
+                                {{ $deploiement->date_deploiement
+                                    ? \Carbon\Carbon::parse($deploiement->date_deploiement)->format('d/m/Y')
+                                    : '-' }}
+                            </td>
+
+                            <td>
+                                @if($deploiement->statut == 'effectue')
+                                    <span class="badge-success">Effectué</span>
+                                @elseif($deploiement->statut == 'planifie')
+                                    <span class="badge-warning">Planifié</span>
+                                @else
+                                    <span class="badge-secondary">{{ ucfirst($deploiement->statut) }}</span>
+                                @endif
+                            </td>
+
+                            <td>
+                                <div class="actions">
+
+                                    <a href="{{ route('deploiement.show', $deploiement->id) }}" class="btn-show">
+                                        Voir
+                                    </a>
+
+                                    <a href="{{ route('deploiement.edit', $deploiement->id) }}" class="btn-edit">
+                                        Modifier
+                                    </a>
+
+                                    <form action="{{ route('deploiement.destroy', $deploiement->id) }}" method="POST"
+                                        onsubmit="return confirm('Supprimer ce déploiement ?')">
+                                        @csrf
+                                        @method('DELETE')
+
+                                        <button class="btn-delete">
+                                            Supprimer
+                                        </button>
+                                    </form>
+
+                                </div>
+                            </td>
+
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="9" class="empty">
+                                Aucun déploiement trouvé
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+
+            <!-- Pagination -->
+            <div style="margin-top:15px;">
+                {{ $deploiements->links() }}
+            </div>
+
         </div>
     </div>
+
 </div>
-
-<!-- Scripts -->
-<script src="{{ asset('assets/vendor/jquery/jquery.min.js') }}"></script>
-<script src="{{ asset('assets/vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
-<script src="{{ asset('assets/vendor/jquery-easing/jquery.easing.min.js') }}"></script>
-<script src="{{ asset('assets/js/sb-admin-2.min.js') }}"></script>
-<script src="{{ asset('assets/vendor/datatables/jquery.dataTables.min.js') }}"></script>
-<script src="{{ asset('assets/vendor/datatables/dataTables.bootstrap4.min.js') }}"></script>
-
-<script>
-    $(document).ready(function() {
-        $('#deploiementsTable').DataTable({
-            "order": [[1, "desc"]], // trier par date de création
-            "pageLength": 10
-        });
-    });
-</script>
-
 @endsection

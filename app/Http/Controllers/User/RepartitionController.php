@@ -21,45 +21,50 @@ use Illuminate\Support\Facades\Mail;
 
 class RepartitionController extends Controller
 {
-    public function index()
-    {
-        $repartitions = Repartition::with(['bondelivraison', 'lignes.service'])
-            ->orderByDesc('date_repartition')
+   public function index()
+{
+    $repartitions = Repartition::with(['bondelivraison', 'lignes.service'])
+        ->orderByDesc('date_repartition')
+        ->paginate(10); // ← Pagination 10 par page
+
+    return view('user.repartition.index', compact('repartitions'));
+}
+
+   public function create()
+{
+    // Récupère les bons de livraison qui n'ont pas encore été utilisés pour une répartition
+    $bondelivraisons = Bondelivraison::whereNotIn('id', function ($query) {
+        $query->select('bondelivraison_id')->from('repartitions');
+    })->orderByDesc('id')->get();
+
+    // Tous les services disponibles
+    $services = Service::all();
+
+    // Préparer les matériels disponibles pour chaque bon de livraison
+    $materielsByBL = [];
+    foreach ($bondelivraisons as $bon) {
+        $lignesBL = LigneBondelivraison::where('bondelivraison_id', $bon->id)
+            ->with(['materiel', 'materiel.marque', 'materiel.typemateriel'])
             ->get();
 
-        return view('user.repartition.index', compact('repartitions'));
+        $materielsByBL[$bon->id] = $lignesBL->map(function ($ligne) {
+            $materiel = $ligne->materiel;
+
+            return [
+                'ligneBL_id'    => $ligne->id,
+                'id'            => $materiel->id,
+                'designation'   => $materiel->designation ?? 'N/A',
+                'marque'        => $materiel->marque->Designation ?? 'N/A',
+                'typemateriel'  => $materiel->typemateriel->Designation ?? 'N/A',
+                'numero_serie'  => $materiel->numero_serie ?? 'N/A',
+                'quantite'      => $ligne->quantite ?? 1,
+            ];
+        });
     }
 
-    public function create()
-    {
-        $bondelivraisons = Bondelivraison::whereNotIn('id', function ($query) {
-            $query->select('bondelivraison_id')->from('repartitions');
-        })->orderByDesc('id')->get();
-
-        $services = Service::all();
-
-        $materielsByBL = [];
-        foreach ($bondelivraisons as $bon) {
-            $lignesBL = LigneBondelivraison::where('bondelivraison_id', $bon->id)
-                ->with(['materiel', 'materiel.marque', 'materiel.typemateriel'])
-                ->get();
-
-            $materielsByBL[$bon->id] = $lignesBL->map(function ($ligne) {
-                $m = $ligne->materiel;
-                return [
-                    'ligneBL_id' => $ligne->id,
-                    'id' => $m->id,
-                    'designation' => $m->designation ?? 'N/A',
-                    'marque' => $m->marque->Designation ?? 'N/A',
-                    'typemateriel' => $m->typemateriel->Designation ?? 'N/A',
-                    'numero_serie' => $m->numero_serie ?? 'N/A',
-                    'quantite' => $ligne->quantite ?? 1,
-                ];
-            });
-        }
-
-        return view('user.repartition.create', compact('bondelivraisons', 'services', 'materielsByBL'));
-    }
+    // Retourner la vue create avec toutes les données nécessaires
+    return view('user.repartition.create', compact('bondelivraisons', 'services', 'materielsByBL'));
+}
 
     public function store(Request $request)
     {

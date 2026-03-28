@@ -7,16 +7,28 @@ use Illuminate\Database\Eloquent\Model;
 class Materiel extends Model
 {
     protected $fillable = [
-        'designation',
+        'bon_livraison_id',
+        'categorie_id',
         'marque_id',
         'typemateriel_id',
+        'code_inventaire',
         'numero_serie',
+        'modele',
         'statut',
+        'site_id',
+        'service_id',
+        'beneficiaire_id',
+        'responsable_actuel',
+        'date_reception',
+        'date_validation',
+        'date_repartition',
+        'date_deploiement',
+        'created_by'
     ];
 
     public function marque()
     {
-        return $this->belongsTo(Marque::class, 'marque_id');
+        return $this->belongsTo(Marque::class);
     }
 
     public function typemateriel()
@@ -24,23 +36,28 @@ class Materiel extends Model
         return $this->belongsTo(TypeMateriel::class, 'typemateriel_id');
     }
 
-    public function ligneBL()
-    {
-        return $this->hasOne(LigneBondelivraison::class, 'materiel_id');
-    }
-// App\Models\Materiel.php
-public function lignes()
+   public function categorie()
 {
-    return $this->hasMany(LigneBondelivraison::class, 'materiel_id');
+    return $this->belongsTo(CategorieMateriel::class, 'categorie_id');
 }
 
-public function type()
+    public function site()
     {
-        return $this->belongsTo(TypeMateriel::class, 'type_materiel_id');
+        return $this->belongsTo(Site::class);
     }
+
+    public function service()
+    {
+        return $this->belongsTo(Service::class);
+    }
+
+    public function beneficiaire()
+    {
+        return $this->belongsTo(User::class, 'beneficiaire_id');
+    }
+
     public function repartitions()
-{
-    return $this->hasMany(Repartition::class);
-}
-
+    {
+        return $this->hasMany(Repartition::class);
+    }
 }

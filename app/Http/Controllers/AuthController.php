@@ -35,11 +35,11 @@ class AuthController extends Controller
                 ->withInput();
         }
 
-        if (! $user->is_active) {
-            return back()->withErrors([
-                'email' => 'Votre compte est suspendu. Contactez un administrateur.'
-            ]);
-        }
+       if ($user->is_suspended) {
+    return back()->withErrors([
+        'email' => 'Votre compte est suspendu. Contactez un administrateur.'
+    ]);
+}
 
         if (! Hash::check($request->password, $user->password)) {
             return back()

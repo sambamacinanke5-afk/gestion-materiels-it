@@ -1,87 +1,105 @@
-@extends('partials.admin.master')
+@extends('layouts.app')
 
 @section('content')
+<style>
+    .admin-page { padding: 24px; background: #f8fafc; min-height: 100vh; }
+    .page-title { font-size: 28px; font-weight: 700; color: #1f2937; }
+    .card-clean { background: #fff; border-radius: 18px; box-shadow: 0 8px 24px rgba(0,0,0,0.05); max-width: 900px; }
+    .card-clean-body { padding: 24px; }
+    .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+    .form-group-full { grid-column: 1 / -1; }
+    .form-label-clean { font-weight: 600; margin-bottom: 6px; display: block; }
+    .form-control-clean { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid #ddd; }
+    .form-control-clean:focus { border-color: #2563eb; box-shadow: 0 0 5px rgba(37,99,235,0.3); }
+    .actions-bar { margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px; }
+    .btn-primary-clean { background: #16a34a; color: #fff; padding: 10px 16px; border-radius: 10px; }
+    .btn-secondary-clean { background: #e5e7eb; padding: 10px 16px; border-radius: 10px; }
+    .alert-clean { background: #fee2e2; padding: 12px; border-radius: 10px; margin-bottom: 15px; }
+</style>
 
-<div class="container-fluid">
+<div class="admin-page">
 
-    <!-- Page Heading -->
-    <div class="d-flex justify-content-between align-items-center mb-4 mt-3">
-        <h1 class="h3 text-gray-800">Modification d'un fournisseur</h1>
-        <a href="{{ route('fournisseurs.index') }}" class="btn btn-secondary">
-            <i class="fas fa-arrow-left"></i> Retour à la liste
-        </a>
-    </div>
+    <h1 class="page-title mb-3">Modifier un fournisseur</h1>
 
-    <!-- Flash Messages -->
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            {{ session('success') }}
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
-        </div>
-    @endif
-
-    @if(session('error'))
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            {{ session('error') }}
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
-        </div>
-    @endif
-    <!-- End Flash Messages -->
-
-    <!-- Validation Errors -->
-    @if ($errors->any())
-        <div class="alert alert-danger">
-            <ul class="mb-0">
-                @foreach ($errors->all() as $error)
+    {{-- ERREURS --}}
+    @if($errors->any())
+        <div class="alert-clean">
+            <ul>
+                @foreach($errors->all() as $error)
                     <li>{{ $error }}</li>
                 @endforeach
             </ul>
         </div>
     @endif
 
-    <!-- Card Form -->
-    <div class="card shadow mb-4 mt-4">
-        <div class="card-header py-3 bg-primary text-white">
-            <h6 class="m-0 font-weight-bold">Modifier un fournisseur</h6>
-        </div>
-        <div class="card-body">
+    <div class="card-clean">
+        <div class="card-clean-body">
+
             <form action="{{ route('fournisseurs.update', $fournisseur->id) }}" method="POST">
                 @csrf
-                @method('PUT') <!-- 🔹 IMPORTANT pour Laravel Update -->
+                @method('PUT')
 
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label for="nom" class="form-label">Nom du fournisseur <span class="text-danger">*</span></label>
-                        <input type="text" name="nom" id="nom" class="form-control" placeholder="Entrez le nom du fournisseur" required value="{{ old('nom', $fournisseur->nom) }}">
+                <div class="form-grid">
+
+                    <!-- Nom -->
+                    <div>
+                        <label class="form-label-clean">Nom *</label>
+                        <input type="text" name="nom" class="form-control-clean"
+                            value="{{ old('nom', $fournisseur->nom) }}" required>
                     </div>
-                    <div class="col-md-6">
-                        <label for="Adresse" class="form-label">Adresse <span class="text-danger">*</span></label>
-                        <input type="text" name="Adresse" id="Adresse" class="form-control" placeholder="Adresse du fournisseur" required value="{{ old('Adresse', $fournisseur->Adresse) }}">
+
+                    <!-- Contact Nom -->
+                    <div>
+                        <label class="form-label-clean">Nom du contact</label>
+                        <input type="text" name="contact_nom" class="form-control-clean"
+                            value="{{ old('contact_nom', $fournisseur->contact_nom) }}">
                     </div>
+
+                    <!-- Téléphone -->
+                    <div>
+                        <label class="form-label-clean">Téléphone</label>
+                        <input type="text" name="telephone" class="form-control-clean"
+                            value="{{ old('telephone', $fournisseur->telephone) }}">
+                    </div>
+
+                    <!-- Email -->
+                    <div>
+                        <label class="form-label-clean">Email</label>
+                        <input type="email" name="email" class="form-control-clean"
+                            value="{{ old('email', $fournisseur->email) }}">
+                    </div>
+
+                    <!-- Adresse -->
+                    <div class="form-group-full">
+                        <label class="form-label-clean">Adresse</label>
+                        <input type="text" name="adresse" class="form-control-clean"
+                            value="{{ old('adresse', $fournisseur->adresse) }}">
+                    </div>
+
+                    <!-- Actif -->
+                    <div class="form-group-full">
+                        <label>
+                            <input type="checkbox" name="actif" value="1"
+                                {{ old('actif', $fournisseur->actif) ? 'checked' : '' }}>
+                            Fournisseur actif
+                        </label>
+                    </div>
+
                 </div>
 
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label for="Contact" class="form-label">Téléphone <span class="text-danger">*</span></label>
-                        <input type="text" name="Contact" id="Contact" class="form-control" placeholder="Ex : +223 76 00 00 00" required value="{{ old('Contact', $fournisseur->Contact) }}">
-                    </div>
-                </div>
+                <div class="actions-bar">
+                    <a href="{{ route('fournisseurs.index') }}" class="btn-secondary-clean">
+                        Annuler
+                    </a>
 
-                <div class="text-end">
-                    <button type="submit" class="btn btn-success">
-                        <i class="fas fa-save"></i> Modifier
+                    <button type="submit" class="btn-primary-clean">
+                        Mettre à jour
                     </button>
-                    <button type="reset" class="btn btn-warning">
-                        <i class="fas fa-undo"></i> Réinitialiser
-                    </button>
                 </div>
+
             </form>
         </div>
     </div>
-</div>
 
+</div>
 @endsection

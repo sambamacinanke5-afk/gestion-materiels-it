@@ -1,54 +1,157 @@
-@extends('partials.admin.master')
+@extends('layouts.app')
 
 @section('content')
+    <style>
+        .admin-page {
+            padding: 24px;
+            background: #f8fafc;
+            min-height: 100vh;
+        }
 
-<!-- Custom fonts for this template-->
-<link href="{{ asset('assets/vendor/fontawesome-free/css/all.min.css') }}" rel="stylesheet" type="text/css">
-<link href="https://fonts.googleapis.com/css?family=Nunito:200,300,400,600,700,800,900" rel="stylesheet">
-<!-- Custom styles for this template-->
-<link href="{{ asset('assets/css/sb-admin-2.min.css') }}" rel="stylesheet">
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
 
-<div class="container-fluid">
+        .page-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1f2937;
+        }
 
-    <!-- Page Heading -->
-    <div class="d-flex justify-content-between align-items-center mb-4 mt-3">
-        <h1 class="h3 text-gray-800">Ajouter une marque</h1>
-        <a href="{{ route('marque.index') }}" class="btn btn-secondary">
-            <i class="fas fa-arrow-left"></i> Retour à la liste
-        </a>
-    </div>
+        .btn-secondary-clean {
+            background: #e5e7eb;
+            color: #111827;
+            padding: 10px 16px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+        }
 
-    <!-- Card Form -->
-    <div class="card shadow mb-4 mt-4">
-        <div class="card-header py-3 bg-primary text-white">
-            <h6 class="m-0 font-weight-bold">Nouveau marque</h6>
+        .btn-secondary-clean:hover {
+            background: #d1d5db;
+        }
+
+        .card-clean {
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+            max-width: 600px;
+        }
+
+        .card-clean-body {
+            padding: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-label-clean {
+            font-weight: 600;
+            margin-bottom: 6px;
+            display: block;
+            color: #374151;
+        }
+
+        .form-control-clean {
+            width: 100%;
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+        }
+
+        .form-control-clean:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 5px rgba(37, 99, 235, 0.3);
+        }
+
+        .actions-bar {
+            margin-top: 20px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .btn-success-clean {
+            background: #16a34a;
+            color: #fff;
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: none;
+        }
+
+        .btn-warning-clean {
+            background: #facc15;
+            color: #111827;
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: none;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+    </style>
+
+    <div class="admin-page">
+
+        <!-- Header -->
+        <div class="page-header">
+            <h1 class="page-title">Ajouter une marque</h1>
+
+            <a href="{{ route('marque.index') }}" class="btn-secondary-clean">
+                ← Retour
+            </a>
         </div>
-        <div class="card-body">
-            <form action="{{ route("marque.store") }}" method="POST">
-                @csrf
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label for="Designation" class="form-label">Nom du Marque <span class="text-danger">*</span></label>
-                        <input type="text" name="Designation" id="Designation" class="form-control" placeholder="Entrez le nom du marque" required>
+
+        <!-- Erreurs -->
+        @if ($errors->any())
+            <div class="alert-error">
+                <ul style="margin:0; padding-left:15px;">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
+        <!-- Card -->
+        <div class="card-clean">
+            <div class="card-clean-body">
+                <form action="{{ url('marque/create/add') }}" method="POST">
+                    @csrf
+
+                    <div class="form-group">
+                        <label class="form-label-clean">
+                            Nom de la marque <span style="color:red">*</span>
+                        </label>
+
+                        <input type="text" name="Designation" class="form-control-clean"
+                            placeholder="Ex: HP, Dell, Lenovo..." required>
                     </div>
 
-                </div>
+                    <!-- Actions -->
+                    <div class="actions-bar">
+                        <button type="reset" class="btn-warning-clean">
+                            Réinitialiser
+                        </button>
 
+                        <button type="submit" class="btn-success-clean">
+                            Enregistrer
+                        </button>
+                    </div>
 
+                </form>
 
-                </div>
-
-                <div class="text-end">
-                    <button type="submit" class="btn btn-success">
-                        <i class="fas fa-save"></i> Enregistrer
-                    </button>
-                    <button type="reset" class="btn btn-warning">
-                        <i class="fas fa-undo"></i> Réinitialiser
-                    </button>
-                </div>
-            </form>
+            </div>
         </div>
-    </div>
-</div>
 
+    </div>
 @endsection

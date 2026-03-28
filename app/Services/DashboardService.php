@@ -73,7 +73,7 @@ class DashboardService
         return Materiel::whereHas('typeMateriel', function ($q) use ($names) {
             $q->where(function ($query) use ($names) {
                 foreach ($names as $name) {
-                    $query->orWhereRaw('LOWER(Designation) = ?', [mb_strtolower($name)]);
+                    $query->orWhereRaw('LOWER(nom) = ?', [mb_strtolower($name)]);
                 }
             });
         })->count();
@@ -82,7 +82,7 @@ class DashboardService
     private function countAutresTypes(): int
     {
         return Materiel::whereDoesntHave('typeMateriel', function ($q) {
-            $q->whereIn('Designation', ['Ordinateur', 'ordinateur', 'PC', 'Imprimante', 'Scanner']);
+            $q->whereIn('nom', ['Ordinateur', 'ordinateur', 'PC', 'Imprimante', 'Scanner']);
         })->count();
     }
 
