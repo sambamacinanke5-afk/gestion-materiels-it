@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Service;
+//use App\Models\Site;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 
@@ -21,35 +22,28 @@ class ServiceController extends Controller
     /**
      * Formulaire de création
      */
-    public function create()
-    {
-        return view('admin.servicess.create');
-    }
+   public function create()
+{
+    //$sites = Site::all(); // 🔥 récupération des sites
 
-    /**
-     * Enregistrement d’un service
-     */
-    public function store(Request $request): RedirectResponse
-    {
-        $request->validate([
-            'Designation' => 'required|string|max:255',
-        ]);
+    return view('admin.servicess.create', compact('services'));
+}
 
-        try {
-            Service::create(
-                $request->only('Designation')
-            );
+public function store(Request $request)
+{
+    $request->validate([
+        'nom' => 'required|string|max:255',
+        //'site_id' => 'nullable|exists:sites,id',
+    ]);
 
-            session()->flash('success', 'Le service a été ajouté avec succès.');
+    Service::create([
+        'nom' => $request->nom,
+        //'site_id' => $request->site_id,
+    ]);
 
-        } catch (\Throwable $e) {
-
-            session()->flash('error', 'Une erreur est survenue lors de l’ajout du service.');
-        }
-
-        return redirect()->route('service.index');
-    }
-
+    return redirect()->route('service.index')
+        ->with('success', 'Service ajouté avec succès !');
+}
     /**
      * Formulaire d’édition
      */
@@ -65,13 +59,13 @@ class ServiceController extends Controller
     public function update(Request $request, int $id): RedirectResponse
     {
         $request->validate([
-            'Designation' => 'required|string|max:255',
+            'nom' => 'required|string|max:255',
         ]);
 
         try {
             $service = Service::findOrFail($id);
             $service->update(
-                $request->only('Designation')
+                $request->only('nom')
             );
 
             session()->flash('success', 'Le service a été modifié avec succès.');

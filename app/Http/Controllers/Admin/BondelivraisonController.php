@@ -33,7 +33,7 @@ class BondelivraisonController extends Controller
     // Récupération des fournisseurs, types et marques
     $fournisseurs = Fournisseur::orderBy('nom')->get();
     $typemateriels = TypeMateriel::orderBy('nom')->get();
-    $marques = Marque::orderBy('nom')->get();
+    $marques = Marque::orderBy('Designation')->get();
 
     // Passer les variables à la vue
     return view('admin.bondelivraison.create', compact('fournisseurs', 'typemateriels', 'marques'));

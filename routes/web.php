@@ -210,19 +210,13 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/destroy/{id}', [TypeMaterielController::class, 'destroy'])->name('destroy');
     });
 
-    Route::prefix('materiels')
-        ->name('materiels.')
-        ->middleware('role:admin|it')
-        ->group(function () {
-
-            Route::get('/', [MaterielController::class, 'index'])->name('index');
-            Route::get('/create', [MaterielController::class, 'create'])->name('create');
-            Route::post('/store', [MaterielController::class, 'store'])->name('store');
-
-            Route::get('/edit/{materiel}', [MaterielController::class, 'edit'])->name('edit');
-            Route::put('/update/{materiel}', [MaterielController::class, 'update'])->name('update');
-
-            Route::delete('/destroy/{materiel}', [MaterielController::class, 'destroy'])->name('destroy');
+    Route::prefix('materiels')->name('materiels.')->middleware('role:admin|it')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\MaterielController::class, 'index'])->name('index');
+            Route::get('/create', [\App\Http\Controllers\Admin\MaterielController::class, 'create'])->name('create');
+            Route::post('/store', [\App\Http\Controllers\Admin\MaterielController::class, 'store'])->name('store');
+            Route::get('/edit/{materiel}', [\App\Http\Controllers\Admin\MaterielController::class, 'edit'])->name('edit');
+            Route::put('/update/{materiel}', [\App\Http\Controllers\Admin\MaterielController::class, 'update'])->name('update');
+            Route::delete('/destroy/{materiel}', [\App\Http\Controllers\Admin\MaterielController::class, 'destroy'])->name('destroy');
         });
 
 

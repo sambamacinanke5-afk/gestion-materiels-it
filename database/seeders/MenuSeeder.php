@@ -50,7 +50,7 @@ class MenuSeeder extends Seeder
             ],
             [
                 'title' => 'Matériels',
-                'route' => 'gestionmateriel.index',
+                'route' => 'materiels.index',
                 'icon' => 'fa-solid fa-computer',
                 'permission_name' => 'materiel.view',
                 'sort_order' => 5,
@@ -122,6 +122,14 @@ class MenuSeeder extends Seeder
                 'icon' => 'fa-solid fa-list',
                 'permission_name' => 'menus.view',
                 'sort_order' => 13,
+                'is_active' => 1,
+            ],
+              [
+                'title' => 'Gestion Materiel',
+                'route' => 'admin.gestionmateriel.index',
+                'icon' => 'fa-solid fa-list',
+                'permission_name' => 'gestionmateriel.view',
+                'sort_order' => 14,
                 'is_active' => 1,
             ],
         ];

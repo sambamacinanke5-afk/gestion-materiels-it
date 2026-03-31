@@ -10,7 +10,7 @@ return new class extends Migration {
         Schema::create('services', function (Blueprint $table) {
             $table->id();
             $table->string('nom');
-            $table->foreignId('site_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('site_id')->nullable()->constrained()->cascadeOnDelete();
             $table->timestamps();
         });
     }
@@ -18,5 +18,6 @@ return new class extends Migration {
     public function down(): void
     {
         Schema::dropIfExists('services');
+
     }
 };

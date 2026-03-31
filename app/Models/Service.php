@@ -14,7 +14,8 @@ class Service extends Model
 
     // 🔹 Champs pouvant être remplis en masse
     protected $fillable = [
-        'Designation',
+        'nom',
+        //'site_id',
     ];
 
     // 🔹 Exemple de relation (à activer selon ton besoin)
@@ -27,5 +28,10 @@ class Service extends Model
 {
     return $this->hasMany(Lignerepartition::class, 'services_id');
 }
+public function site()
+{
+    return $this->belongsTo(Site::class);
+}
+
 
 }

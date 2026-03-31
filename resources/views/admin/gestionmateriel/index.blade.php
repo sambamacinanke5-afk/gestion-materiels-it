@@ -1,4 +1,4 @@
-@extends('partials.admin.master')
+@extends('layouts.app')
     @section('content')
         <!-- Custom fonts for this template-->
 

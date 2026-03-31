@@ -1,108 +1,184 @@
-@extends('partials.admin.master')
-    @section('content')
-        <!-- Custom fonts for this template-->
+@extends('layouts.app')
 
-        <div class="container-fluid">
-            <!-- Page Heading -->
-            <div class="d-flex justify-content-between align-items-center mb-4 mt-3">
-                <h1 class="h3 text-gray-800">Liste des service</h1>
-                <a href="{{ route('service.create') }}" class="btn btn-primary">
-                    <i class="fas fa-plus"></i> Ajouter une service
-                </a>
-            </div>
-            <p class="mb-4">Liste complète des services enregistrés dans le système.</p>
-            <!-- DataTables Example -->
-            <div class="card shadow mb-4 mt-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Table des services</h6>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
-                            <thead>
-                                <tr>
-                                    <th>Service</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($services as $service)
-                                    <tr>
-                                        <td>{{ $service->Designation }}</td>
+@section('content')
+<style>
+    .admin-page {
+        padding: 24px;
+        background: #f8fafc;
+        min-height: 100vh;
+    }
 
-                                        <td> <!-- Bouton Modifier -->
-                                            <a href="{{ route('service.edit', $service->id) }}"
-                                                class="btn btn-sm btn-primary">
-                                                <i class="fas fa-edit"></i> Modifier
-                                            </a>
-                                            <!-- Bouton Supprimer -->
-                                            <a href="#" class="btn btn-sm btn-danger" data-toggle="modal"
-                                                data-target="#delete_fournisseur{{ $service->id }}">
-                                                <i class="fas fa-trash"></i> Supprimer
-                                            </a>
-                                        </td>
-                                    </tr>
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
 
-                                    <!-- Modal de confirmation -->
-                                    <div class="modal fade" id="delete_fournisseur{{ $service->id }}" tabindex="-1"
-                                        role="dialog" aria-labelledby="deleteModalLabel{{ $service->id }}"
-                                        aria-hidden="true">
-                                        <div class="modal-dialog" role="document">
-                                            <div class="modal-content">
-                                                <div class="modal-header bg-danger text-white">
-                                                    <h5 class="modal-title" id="deleteModalLabel{{ $service->id }}">
-                                                        Confirmation de suppression
-                                                    </h5>
-                                                    <button type="button" class="close text-white" data-dismiss="modal"
-                                                        aria-label="Fermer">
-                                                        <span aria-hidden="true">&times;</span>
-                                                    </button>
-                                                </div>
-                                                <div class="modal-body">
-                                                    Êtes-vous sûr de vouloir supprimer une service
-                                                    <strong>{{ $service->Designation }}</strong> ?
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-secondary"
-                                                        data-dismiss="modal">Annuler</button>
-                                                    <form action="{{ route('service.destroy', $service->id) }}"
-                                                        method="POST">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit" class="btn btn-danger">Oui,
-                                                            supprimer</button>
-                                                    </form>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </tbody>
+    .page-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: #1f2937;
+    }
 
-                        </table>
-                    </div>
-                </div>
-            </div>
+    .btn-primary-clean {
+        background: #2563eb;
+        color: #fff;
+        padding: 10px 16px;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .btn-primary-clean:hover {
+        background: #1d4ed8;
+    }
+
+    .card-clean {
+        background: #fff;
+        border-radius: 18px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+    }
+
+    .card-clean-body {
+        padding: 20px;
+    }
+
+    .table-clean {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .table-clean th {
+        text-align: left;
+        font-size: 13px;
+        color: #6b7280;
+    }
+
+    .table-clean th,
+    .table-clean td {
+        padding: 12px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .btn-edit {
+        background: #e0f2fe;
+        color: #0369a1;
+        padding: 6px 10px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 13px;
+    }
+
+    .btn-delete {
+        background: #fee2e2;
+        color: #991b1b;
+        border: none;
+        padding: 6px 10px;
+        border-radius: 8px;
+        font-size: 13px;
+        cursor: pointer;
+    }
+
+    .btn-view {
+        background: #dcfce7;
+        color: #166534;
+        padding: 6px 10px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 13px;
+    }
+
+    .empty {
+        text-align: center;
+        color: #6b7280;
+        padding: 20px;
+    }
+</style>
+
+<div class="admin-page">
+
+    <!-- Header -->
+    <div class="page-header">
+        <h1 class="page-title">Services</h1>
+
+        <a href="{{ route('service.create') }}" class="btn-primary-clean">
+            + Ajouter
+        </a>
+    </div>
+
+    <!-- Message -->
+    @if(session('success'))
+        <div style="margin-bottom:15px;color:green;">
+            {{ session('success') }}
         </div>
+    @endif
+
+    <!-- Card -->
+    <div class="card-clean">
+        <div class="card-clean-body">
+
+            <table class="table-clean">
+                <thead>
+                    <tr>
+                        {{-- <th>#</th> --}}
+                        <th>Nom du service</th>
+                        <th>Site</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @forelse($services as $service)
+                        <tr>
+                            <td>{{ $loop->iteration }}</td>
+                            <td>{{ $service->nom }}</td>
+                            <td>{{ $service->site->nom ?? 'N/A' }}</td>
+
+                            <td>
+                                <div class="actions">
+
+                                    <!-- Voir -->
+                                    <a href="{{ route('service.show', $service->id) }}" class="btn-view">
+                                        Voir
+                                    </a>
+
+                                    <!-- Modifier -->
+                                    <a href="{{ route('service.edit', $service->id) }}" class="btn-edit">
+                                        Modifier
+                                    </a>
+
+                                    <!-- Supprimer -->
+                                    <form action="{{ route('service.destroy', $service->id) }}" method="POST"
+                                          onsubmit="return confirm('Supprimer ce service ?')">
+                                        @csrf
+                                        @method('DELETE')
+
+                                        <button class="btn-delete">
+                                            Supprimer
+                                        </button>
+                                    </form>
+
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="4" class="empty">
+                                Aucun service trouvé
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+
         </div>
-        <!-- Bootstrap core JavaScript-->
-        <script src="{{ asset('assets/vendor/jquery/jquery.min.js') }}"></script>
-        <script src="{{ asset('assets/vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+    </div>
 
-        <!-- Core plugin JavaScript-->
-        <script src="{{ asset('assets/vendor/jquery-easing/jquery.easing.min.js') }}"></script>
-
-        <!-- Custom scripts for all pages-->
-        <script src="{{ asset('assets/js/sb-admin-2.min.js') }}"></script>
-
-        <!-- Page level plugins -->
-        <script src="{{ asset('assets/vendor/datatables/jquery.dataTables.min.js') }}"></script>
-        <script src="{{ asset('assets/vendor/datatables/dataTables.bootstrap4.min.js') }}"></script>
-
-        <!-- Page level custom scripts -->
-        <script>
-            $(document).ready(function() {
-                $('#dataTable').DataTable();
-            });
-        </script>
-    @endsection
+</div>
+@endsection

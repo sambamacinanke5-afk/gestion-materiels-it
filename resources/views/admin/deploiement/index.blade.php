@@ -146,7 +146,7 @@
             <table class="table-clean">
                 <thead>
                     <tr>
-                        <th>#</th>
+
                         <th>BL</th>
                         <th>Fournisseur</th>
                         <th>Matériel</th>

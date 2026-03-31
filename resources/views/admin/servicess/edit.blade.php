@@ -1,56 +1,150 @@
-@extends('partials.admin.master')
+@extends('layouts.app')
 
 @section('content')
+    <style>
+        .admin-page {
+            padding: 24px;
+            background: #f8fafc;
+            min-height: 100vh;
+        }
 
-<div class="container-fluid">
+        .page-header {
+            margin-bottom: 20px;
+        }
 
-    <!-- Page Heading -->
-    <div class="d-flex justify-content-between align-items-center mb-4 mt-3">
-        <h1 class="h3 text-gray-800">Modifier un service</h1>
-        <a href="{{ route('service.index') }}" class="btn btn-secondary">
-            <i class="fas fa-arrow-left"></i> Retour à la liste
-        </a>
-    </div>
+        .page-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1f2937;
+        }
 
-    <!-- Card Form -->
-    <div class="card shadow mb-4 mt-4">
-        <div class="card-header py-3 bg-primary text-white">
-            <h6 class="m-0 font-weight-bold">Modification du service</h6>
+        .card-clean {
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+        }
+
+        .card-clean-body {
+            padding: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 100;
+            margin-bottom: 5px;
+            color: #374151;
+        }
+
+        .form-control-clean {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            outline: none;
+        }
+
+        .form-control-clean:focus {
+            border-color: #2563eb;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn-primary-clean {
+            background: #2563eb;
+            color: #fff;
+            padding: 10px 16px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .btn-primary-clean:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-delete {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 10px 16px;
+            border-radius: 10px;
+            text-decoration: none;
+        }
+
+        .error-box {
+            margin-bottom: 15px;
+            color: red;
+        }
+    </style>
+
+    <div class="admin-page">
+
+        <!-- Header -->
+        <div class="page-header">
+            <h1 class="page-title">Modifier le Service</h1>
         </div>
 
-        <div class="card-body">
-            <form action="{{ route('service.update', $service->id) }}" method="POST">
-                @csrf
-                @method('PUT')
+        <!-- Erreurs -->
+        @if ($errors->any())
+            <div class="error-box">
+                <ul>
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
 
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label for="Designation" class="form-label">
-                            Nom du service <span class="text-danger">*</span>
-                        </label>
+        <!-- Formulaire -->
+        <div class="card-clean">
+            <div class="card-clean-body">
 
-                        <input
-                            type="text"
-                            name="Designation"
-                            id="Designation"
-                            class="form-control"
-                            value="{{ old('Designation', $service->Designation) }}"
-                            required
-                        >
+                <form action="{{ route('service.update', $service->id) }}" method="POST">
+                    @csrf
+                    @method('PUT')
+
+                    <!-- Nom -->
+                    <div class="form-group">
+                        <label class="form-label">Nom du service</label>
+                        <input type="text" name="nom" value="{{ old('nom', $service->nom) }}" class="form-control-clean" required>
                     </div>
-                </div>
 
-                <div class="text-end">
-                    <button type="submit" class="btn btn-success">
-                        <i class="fas fa-save"></i> Enregistrer
-                    </button>
-                    <button type="reset" class="btn btn-warning">
-                        <i class="fas fa-undo"></i> Réinitialiser
-                    </button>
-                </div>
-            </form>
+                    {{-- <!-- Site -->
+                    <div class="form-group">
+                        <label class="form-label">Site</label>
+                        <select name="site_id" class="form-control-clean">
+                            <option value="">-- Choisir un site (optionnel) --</option>
+                            @foreach($sites as $site)
+                                <option value="{{ $site->id }}" {{ old('site_id', $service->site_id) == $site->id ? 'selected' : '' }}>
+                                    {{ $site->nom }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div> --}}
+
+                    <!-- Actions -->
+                    <div class="actions">
+                        <a href="{{ route('service.index') }}" class="btn-delete">
+                            Retour
+                        </a>
+
+                        <button type="submit" class="btn-primary-clean">
+                            Enregistrer les modifications
+                        </button>
+                    </div>
+
+                </form>
+
+            </div>
         </div>
-    </div>
-</div>
 
+    </div>
 @endsection

@@ -1,11 +1,13 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use App\Models\Materiel;
 use App\Models\Marque;
 use App\Models\TypeMateriel;
 use App\Models\CategorieMateriel;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 
 class MaterielController extends Controller
@@ -21,7 +23,7 @@ class MaterielController extends Controller
             'categorie'
         ])->latest()->get();
 
-        return view('materiels.index', compact('materiels'));
+        return view('admin.materiel.index', compact('materiels'));
     }
 
     /**
@@ -33,7 +35,7 @@ class MaterielController extends Controller
         $types = TypeMateriel::all();
         $categories = CategorieMateriel::all();
 
-        return view('materiels.create', compact('marques', 'types', 'categories'));
+       return view('admin.materiel.create', compact('marques', 'types', 'categories'));
     }
 
     /**
@@ -72,12 +74,7 @@ class MaterielController extends Controller
         $types = TypeMateriel::all();
         $categories = CategorieMateriel::all();
 
-        return view('materiels.edit', compact(
-            'materiel',
-            'marques',
-            'types',
-            'categories'
-        ));
+       return view('admin.materiels.edit', compact('marques', 'types', 'categories'));
     }
 
     /**
